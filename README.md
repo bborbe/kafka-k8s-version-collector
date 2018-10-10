@@ -59,7 +59,7 @@ Register Schema
 ```bash
 curl -X POST -H "Content-Type: application/vnd.schemaregistry.v1+json" \
 --data '{"schema":"{\"type\":\"record\",\"name\":\"Version\",\"fields\":[{\"name\":\"App\",\"type\":\"string\"},{\"name\":\"Number\",\"type\":\"string\"}]}"}' \
-http://schema-registry:8081/subjects/simple-avro-kafka-golang-value/versions
+http://schema-registry:8081/subjects/versions-value/versions
 ```
 
 Consume topic on console 
