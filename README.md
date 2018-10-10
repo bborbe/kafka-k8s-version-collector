@@ -3,7 +3,9 @@
 ## Setup Kafka
 
 ```bash
+echo "127.0.0.1 zookeeper" >> /etc/hosts
 echo "127.0.0.1 kafka" >> /etc/hosts
+echo "127.0.0.1 schema-registry" >> /etc/hosts
 ```
 
 ```bash
@@ -57,8 +59,21 @@ Register Schema
 ```bash
 curl -X POST -H "Content-Type: application/vnd.schemaregistry.v1+json" \
 --data '{"schema":"{\"type\":\"record\",\"name\":\"Version\",\"fields\":[{\"name\":\"App\",\"type\":\"string\"},{\"name\":\"Number\",\"type\":\"string\"}]}"}' \
-http://localhost:8081/subjects/simple-avro-kafka-golang-value/versions
+http://schema-registry:8081/subjects/simple-avro-kafka-golang-value/versions
 ```
+
+Consume topic on console 
+
+```bash
+docker run -ti \
+--net=kafka \
+confluentinc/cp-schema-registry:5.0.0 \
+kafka-avro-console-consumer \
+--bootstrap-server kafka:9092 \
+--topic versions \
+--property schema.registry.url=http://schema-registry:8081
+```
+
 
 ## Run version collector
 
@@ -69,3 +84,5 @@ go run main.go \
 -kafka-schema-id=123 \
 -v=2
 ```
+
+
