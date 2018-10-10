@@ -15,7 +15,7 @@ type httpClient interface {
 	Do(req *http.Request) (*http.Response, error)
 }
 
-type SchemaRegistry struct {
+type Registry struct {
 	SchemaRegistryUrl string
 	HttpClient        httpClient
 
@@ -23,7 +23,7 @@ type SchemaRegistry struct {
 	cache map[string]uint32
 }
 
-func (s *SchemaRegistry) SchemaId(subject string, object interface {
+func (s *Registry) SchemaId(subject string, object interface {
 	Schema() string
 }) (uint32, error) {
 	s.mux.Lock()

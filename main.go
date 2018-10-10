@@ -25,7 +25,7 @@ func main() {
 	glog.CopyStandardLogTo("info")
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
-	schemaRegistry := &schema.SchemaRegistry{
+	schemaRegistry := &schema.Registry{
 		HttpClient: http.DefaultClient,
 	}
 	sender := &version.Sender{
@@ -51,6 +51,7 @@ func main() {
 	glog.V(0).Infof("Parameter Wait: %v", *waitPtr)
 	glog.V(0).Infof("Parameter KafkaBrokers: %s", sender.KafkaBrokers)
 	glog.V(0).Infof("Parameter KafkaTopic: %s", sender.KafkaTopic)
+	glog.V(0).Infof("Parameter KafkaSchemaRegistryUrl: %s", schemaRegistry.SchemaRegistryUrl)
 
 	if sender.KafkaBrokers == "" {
 		glog.Exitf("KafkaBrokers missing")

@@ -2,6 +2,7 @@ package version
 
 import (
 	"context"
+	"github.com/golang/glog"
 
 	"github.com/bborbe/kafka-version-collector/avro"
 	"github.com/pkg/errors"
@@ -17,6 +18,8 @@ type Syncer struct {
 }
 
 func (s *Syncer) Sync(ctx context.Context) error {
+	glog.V(0).Infof("sync started")
+	defer glog.V(0).Infof("sync finished")
 	versions, err := s.Fetcher.Fetch(ctx)
 	if err != nil {
 		return errors.Wrap(err, "fetch versions failed")

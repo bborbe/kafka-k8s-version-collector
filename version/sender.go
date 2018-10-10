@@ -54,7 +54,7 @@ func (s *Sender) Send(ctx context.Context, versions []avro.Version) error {
 		if err != nil {
 			return errors.Wrap(err, "send message to kafka failed")
 		}
-		glog.V(0).Infof("send message successful to %s with partition %d offset %d", s.KafkaTopic, partition, offset)
+		glog.V(1).Infof("send message successful to %s with partition %d offset %d", s.KafkaTopic, partition, offset)
 	}
 	return nil
 }
