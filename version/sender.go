@@ -14,9 +14,13 @@ import (
 )
 
 type Sender struct {
-	KafkaBrokers  string
-	KafkaTopic    string
-	KafkaSchemaId uint
+	KafkaBrokers   string
+	KafkaTopic     string
+	SchemaRegistry interface {
+		SchemaId(subject string, object interface {
+			Schema() string
+		}) (uint32, error)
+	}
 }
 
 func (s *Sender) Send(ctx context.Context, versions []avro.Version) error {
@@ -32,11 +36,14 @@ func (s *Sender) Send(ctx context.Context, versions []avro.Version) error {
 	defer producer.Close()
 
 	for _, version := range versions {
-		bs := make([]byte, 4)
-		binary.BigEndian.PutUint32(bs, uint32(s.KafkaSchemaId))
-		b := bytes.NewBuffer(append([]byte{0}, bs...))
-		err := version.Serialize(b)
+		schemaId, err := s.SchemaRegistry.SchemaId(fmt.Sprintf("%s-value", s.KafkaTopic), &version)
 		if err != nil {
+			return errors.Wrap(err, "get schema id failed")
+		}
+		bs := make([]byte, 4)
+		binary.BigEndian.PutUint32(bs, schemaId)
+		b := bytes.NewBuffer(append([]byte{0}, bs...))
+		if err := version.Serialize(b); err != nil {
 			return errors.Wrap(err, "serialize version failed")
 		}
 		partition, offset, err := producer.SendMessage(&sarama.ProducerMessage{

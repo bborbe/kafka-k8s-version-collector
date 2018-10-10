@@ -10,6 +10,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/bborbe/kafka-version-collector/schema"
+
 	"github.com/bborbe/cron"
 	flag "github.com/bborbe/flagenv"
 	"github.com/bborbe/kafka-version-collector/version"
@@ -23,7 +25,12 @@ func main() {
 	glog.CopyStandardLogTo("info")
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
-	sender := &version.Sender{}
+	schemaRegistry := &schema.SchemaRegistry{
+		HttpClient: http.DefaultClient,
+	}
+	sender := &version.Sender{
+		SchemaRegistry: schemaRegistry,
+	}
 	fetcher := &version.Fetcher{
 		HttpClient: http.DefaultClient,
 	}
@@ -35,7 +42,7 @@ func main() {
 	waitPtr := flag.Duration("wait", time.Hour, "time to wait before next version collect")
 	flag.StringVar(&sender.KafkaBrokers, "kafka-brokers", "", "kafka brokers")
 	flag.StringVar(&sender.KafkaTopic, "kafka-topic", "", "kafka topic")
-	flag.UintVar(&sender.KafkaSchemaId, "kafka-schema-id", 42, "kafka schema id")
+	flag.StringVar(&schemaRegistry.SchemaRegistryUrl, "kafka-schema-registry-url", "", "kafka schema registry url")
 
 	flag.Set("logtostderr", "true")
 	flag.Parse()
@@ -51,8 +58,8 @@ func main() {
 	if sender.KafkaTopic == "" {
 		glog.Exitf("KafkaTopic missing")
 	}
-	if sender.KafkaSchemaId == 0 {
-		glog.Exitf("KafkaSchemaId missing")
+	if schemaRegistry.SchemaRegistryUrl == "" {
+		glog.Exitf("SchemaRegistryUrl missing")
 	}
 
 	ctx := contextWithSig(context.Background())
