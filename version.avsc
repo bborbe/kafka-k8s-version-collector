@@ -1,0 +1,8 @@
+{
+	"type": "record",
+	"name": "Version",
+	"fields": [
+	    {"name": "App", "type": "string"},
+	    {"name": "Number", "type": "string"}
+	]
+}
