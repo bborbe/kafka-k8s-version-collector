@@ -8,8 +8,6 @@ package avro
 
 import (
 	"io"
-
-	"github.com/actgardner/gogen-avro/container"
 )
 
 type Version struct {
@@ -19,11 +17,6 @@ type Version struct {
 
 func DeserializeVersion(r io.Reader) (*Version, error) {
 	return readVersion(r)
-}
-
-func NewVersionWriter(writer io.Writer, codec container.Codec, recordsPerBlock int64) (*container.Writer, error) {
-	str := &Version{}
-	return container.NewWriter(writer, codec, recordsPerBlock, str.Schema())
 }
 
 func NewVersion() *Version {

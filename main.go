@@ -9,9 +9,7 @@ import (
 	"runtime"
 	"syscall"
 	"time"
-
 	"github.com/bborbe/kafka-version-collector/schema"
-
 	"github.com/bborbe/cron"
 	flag "github.com/bborbe/flagenv"
 	"github.com/bborbe/kafka-version-collector/version"

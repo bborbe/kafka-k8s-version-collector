@@ -187,14 +187,6 @@
   revision = "b41be1df696709bb6395fe435af20370037c0b4c"
   version = "v1.1"
 
-[[projects]]
-  digest = "1:b22c26daf3e7af2e1bf09da50ab9bc6d7744d7b8c0cba6502e40d2e6163283bc"
-  name = "gopkg.in/linkedin/goavro.v2"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "9e3ffbc22b459192a7090bfd06433b24be086370"
-  version = "v2.6.0"
-
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
@@ -206,7 +198,6 @@
     "github.com/golang/glog",
     "github.com/pkg/errors",
     "github.com/prometheus/client_golang/prometheus/promhttp",
-    "gopkg.in/linkedin/goavro.v2",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
