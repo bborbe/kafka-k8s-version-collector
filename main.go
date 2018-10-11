@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/seibert-media/go-kafka/schema"
 	"net/http"
 	"os"
 	"os/signal"
@@ -12,7 +13,6 @@ import (
 
 	"github.com/bborbe/cron"
 	flag "github.com/bborbe/flagenv"
-	"github.com/bborbe/kafka-version-collector/schema"
 	"github.com/bborbe/kafka-version-collector/version"
 	"github.com/bborbe/run"
 	"github.com/golang/glog"

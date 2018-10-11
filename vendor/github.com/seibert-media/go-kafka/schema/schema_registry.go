@@ -11,6 +11,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+//go:generate counterfeiter -o ../mocks/http_client.go --fake-name HttpClient . httpClient
 type httpClient interface {
 	Do(req *http.Request) (*http.Response, error)
 }
@@ -21,6 +22,11 @@ type Registry struct {
 
 	mux   sync.Mutex
 	cache map[string]uint32
+}
+
+//go:generate counterfeiter -o ../mocks/has_schema.go --fake-name HasSchema . hasSchema
+type hasSchema interface {
+	Schema() string
 }
 
 func (s *Registry) SchemaId(subject string, object interface {
@@ -55,7 +61,7 @@ func (s *Registry) SchemaId(subject string, object interface {
 		return 0, errors.Wrap(err, "http request failed")
 	}
 	if resp.StatusCode/100 != 2 {
-		return 0, errors.Wrap(err, "status code != 2xx")
+		return 0, errors.New("status code != 2xx")
 	}
 	defer resp.Body.Close()
 	var output struct {

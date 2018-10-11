@@ -187,6 +187,14 @@
   revision = "b41be1df696709bb6395fe435af20370037c0b4c"
   version = "v1.1"
 
+[[projects]]
+  branch = "master"
+  digest = "1:09abe1d86e5906430de08e94f498389fbaac1486ac9f18a6aa13d978b3ffa6bc"
+  name = "github.com/seibert-media/go-kafka"
+  packages = ["schema"]
+  pruneopts = "UT"
+  revision = "7ea6a09d9d18a07438cf9bff68bd3fb4a3e2c9ad"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
@@ -198,6 +206,7 @@
     "github.com/golang/glog",
     "github.com/pkg/errors",
     "github.com/prometheus/client_golang/prometheus/promhttp",
+    "github.com/seibert-media/go-kafka/schema",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

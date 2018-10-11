@@ -4,11 +4,10 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/seibert-media/go-kafka/schema"
 	"strings"
-
 	"github.com/Shopify/sarama"
 	"github.com/bborbe/kafka-version-collector/avro"
-	"github.com/bborbe/kafka-version-collector/schema"
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 )
