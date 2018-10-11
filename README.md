@@ -78,4 +78,11 @@ go run main.go \
 -v=2
 ```
 
+## Create and configure topic
 
+```bash
+kafka-topics --create --topic versions --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1
+kafka-configs --zookeeper zookeeper:2181  --entity-type topics --entity-name versions --alter --add-config retention.ms=-1
+kafka-configs --zookeeper zookeeper:2181  --entity-type topics --entity-name versions --alter --add-config retention.bytes=-1
+kafka-configs --zookeeper zookeeper:2181  --entity-type topics --entity-name versions --alter --add-config cleanup.policy=compact
+```
