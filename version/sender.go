@@ -27,7 +27,14 @@ func (s *Sender) Send(ctx context.Context, versions []avro.Version) error {
 	config.Producer.RequiredAcks = sarama.WaitForAll
 	config.Producer.Retry.Max = 10
 	config.Producer.Return.Successes = true
-	producer, err := sarama.NewSyncProducer(strings.Split(s.KafkaBrokers, ","), config)
+
+	client, err := sarama.NewClient(strings.Split(s.KafkaBrokers, ","), config)
+	if err != nil {
+		return errors.Wrap(err, "create client failed")
+	}
+	defer client.Close()
+
+	producer, err := sarama.NewSyncProducerFromClient(client)
 	if err != nil {
 		return errors.Wrap(err, "create sync producer failed")
 	}
