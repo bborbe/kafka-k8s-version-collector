@@ -189,11 +189,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:09abe1d86e5906430de08e94f498389fbaac1486ac9f18a6aa13d978b3ffa6bc"
+  digest = "1:0274ee6ed9e82b7ae2fb07cc7550ca5ca0c1c177cc3ffe4d55ccb08e1052f053"
   name = "github.com/seibert-media/go-kafka"
   packages = ["schema"]
   pruneopts = "UT"
-  revision = "7ea6a09d9d18a07438cf9bff68bd3fb4a3e2c9ad"
+  revision = "6587e4999e0df0619b6b223d3a51f25f6511a319"
 
 [solve-meta]
   analyzer-name = "dep"

@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/seibert-media/go-kafka/schema"
 	"net/http"
 	"os"
 	"os/signal"
@@ -17,6 +16,7 @@ import (
 	"github.com/bborbe/run"
 	"github.com/golang/glog"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/seibert-media/go-kafka/schema"
 )
 
 func main() {

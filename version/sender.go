@@ -4,21 +4,20 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/seibert-media/go-kafka/schema"
 	"strings"
+
 	"github.com/Shopify/sarama"
 	"github.com/bborbe/kafka-version-collector/avro"
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
+	"github.com/seibert-media/go-kafka/schema"
 )
 
 type Sender struct {
 	KafkaBrokers   string
 	KafkaTopic     string
 	SchemaRegistry interface {
-		SchemaId(subject string, object interface {
-			Schema() string
-		}) (uint32, error)
+		SchemaId(subject string, schema string) (uint32, error)
 	}
 }
 
@@ -35,7 +34,7 @@ func (s *Sender) Send(ctx context.Context, versions []avro.Version) error {
 	defer producer.Close()
 
 	for _, version := range versions {
-		schemaId, err := s.SchemaRegistry.SchemaId(fmt.Sprintf("%s-value", s.KafkaTopic), &version)
+		schemaId, err := s.SchemaRegistry.SchemaId(fmt.Sprintf("%s-value", s.KafkaTopic), version.Schema())
 		if err != nil {
 			return errors.Wrap(err, "get schema id failed")
 		}
