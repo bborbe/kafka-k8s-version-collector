@@ -3,12 +3,12 @@ package version
 import (
 	"bytes"
 	"context"
-	"encoding/binary"
 	"fmt"
 	"strings"
 
 	"github.com/Shopify/sarama"
 	"github.com/bborbe/kafka-version-collector/avro"
+	"github.com/bborbe/kafka-version-collector/schema"
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 )
@@ -40,16 +40,14 @@ func (s *Sender) Send(ctx context.Context, versions []avro.Version) error {
 		if err != nil {
 			return errors.Wrap(err, "get schema id failed")
 		}
-		bs := make([]byte, 4)
-		binary.BigEndian.PutUint32(bs, schemaId)
-		b := bytes.NewBuffer(append([]byte{0}, bs...))
-		if err := version.Serialize(b); err != nil {
+		buf := &bytes.Buffer{}
+		if err := version.Serialize(buf); err != nil {
 			return errors.Wrap(err, "serialize version failed")
 		}
 		partition, offset, err := producer.SendMessage(&sarama.ProducerMessage{
 			Topic: s.KafkaTopic,
 			Key:   sarama.StringEncoder(fmt.Sprintf("%s-%s", version.App, version.Number)),
-			Value: sarama.ByteEncoder(b.Bytes()),
+			Value: &schema.AvroEncoder{SchemaId: schemaId, Content: buf.Bytes()},
 		})
 		if err != nil {
 			return errors.Wrap(err, "send message to kafka failed")

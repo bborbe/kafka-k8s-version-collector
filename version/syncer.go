@@ -2,6 +2,7 @@ package version
 
 import (
 	"context"
+
 	"github.com/golang/glog"
 
 	"github.com/bborbe/kafka-version-collector/avro"
