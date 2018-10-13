@@ -13,3 +13,7 @@ generate:
 	go get github.com/maxbrunsfeld/counterfeiter
 	go get github.com/actgardner/gogen-avro/gogen-avro
 	go generate ./...
+
+addlicense:
+	go get github.com/google/addlicense
+	addlicense -c "Benjamin Borbe" -y 2018 -l bsd ./*.go ./version/*.go
