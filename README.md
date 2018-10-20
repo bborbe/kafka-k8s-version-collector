@@ -1,4 +1,4 @@
-# Send App Versions to Kafka
+# Send Kubernetes Versions to Kafka
 
 ## Setup Kafka
 
