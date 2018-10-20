@@ -6,27 +6,38 @@ package version
 
 import (
 	"context"
+	"runtime"
 
 	"github.com/bborbe/kafka-k8s-version-collector/avro"
+	"github.com/bborbe/run"
 	"github.com/golang/glog"
-	"github.com/pkg/errors"
 )
 
+type fetcher interface {
+	Fetch(ctx context.Context, versions chan<- avro.Version) error
+}
+
+type sender interface {
+	Send(ctx context.Context, versions <-chan avro.Version) error
+}
+
 type Syncer struct {
-	Fetcher interface {
-		Fetch(ctx context.Context) ([]avro.Version, error)
-	}
-	Sender interface {
-		Send(ctx context.Context, versions []avro.Version) error
-	}
+	Fetcher fetcher
+	Sender  sender
 }
 
 func (s *Syncer) Sync(ctx context.Context) error {
-	glog.V(0).Infof("sync started")
-	defer glog.V(0).Infof("sync finished")
-	versions, err := s.Fetcher.Fetch(ctx)
-	if err != nil {
-		return errors.Wrap(err, "fetch versions failed")
-	}
-	return errors.Wrap(s.Sender.Send(ctx, versions), "send version failed")
+	glog.V(1).Infof("sync started")
+	defer glog.V(1).Infof("sync finished")
+	versions := make(chan avro.Version, runtime.NumCPU())
+	return run.CancelOnFirstError(
+		ctx,
+		func(ctx context.Context) error {
+			defer close(versions)
+			return s.Fetcher.Fetch(ctx, versions)
+		},
+		func(ctx context.Context) error {
+			return s.Sender.Send(ctx, versions)
+		},
+	)
 }

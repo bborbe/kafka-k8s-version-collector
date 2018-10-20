@@ -1,4 +1,4 @@
-# Send Kubernetes Versions to Kafka
+# Send Kubernetes versions to Kafka topic
 
 ## Setup Kafka
 

@@ -13,7 +13,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Kafka Version Collector", func() {
+var _ = Describe("Kafka K8s Version Collector", func() {
 	It("Compiles", func() {
 		var err error
 		_, err = gexec.Build("github.com/bborbe/kafka-k8s-version-collector")

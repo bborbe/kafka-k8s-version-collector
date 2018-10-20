@@ -25,7 +25,7 @@ type Sender struct {
 	}
 }
 
-func (s *Sender) Send(ctx context.Context, versions []avro.Version) error {
+func (s *Sender) Send(ctx context.Context, versions <-chan avro.Version) error {
 	config := sarama.NewConfig()
 	config.Version = sarama.V2_0_0_0
 	config.Producer.RequiredAcks = sarama.WaitForAll
@@ -44,24 +44,33 @@ func (s *Sender) Send(ctx context.Context, versions []avro.Version) error {
 	}
 	defer producer.Close()
 
-	for _, version := range versions {
-		schemaId, err := s.SchemaRegistry.SchemaId(fmt.Sprintf("%s-value", s.KafkaTopic), version.Schema())
-		if err != nil {
-			return errors.Wrap(err, "get schema id failed")
+	for {
+		select {
+		case <-ctx.Done():
+			glog.V(3).Infof("context done => return")
+			return nil
+		case version, ok := <-versions:
+			if !ok {
+				glog.V(3).Infof("channel closed => return")
+				return nil
+			}
+			schemaId, err := s.SchemaRegistry.SchemaId(fmt.Sprintf("%s-value", s.KafkaTopic), version.Schema())
+			if err != nil {
+				return errors.Wrap(err, "get schema id failed")
+			}
+			buf := &bytes.Buffer{}
+			if err := version.Serialize(buf); err != nil {
+				return errors.Wrap(err, "serialize version failed")
+			}
+			partition, offset, err := producer.SendMessage(&sarama.ProducerMessage{
+				Topic: s.KafkaTopic,
+				Key:   sarama.StringEncoder(fmt.Sprintf("%s-%s", version.App, version.Number)),
+				Value: &schema.AvroEncoder{SchemaId: schemaId, Content: buf.Bytes()},
+			})
+			if err != nil {
+				return errors.Wrap(err, "send message to kafka failed")
+			}
+			glog.V(3).Infof("send message successful to %s with partition %d offset %d", s.KafkaTopic, partition, offset)
 		}
-		buf := &bytes.Buffer{}
-		if err := version.Serialize(buf); err != nil {
-			return errors.Wrap(err, "serialize version failed")
-		}
-		partition, offset, err := producer.SendMessage(&sarama.ProducerMessage{
-			Topic: s.KafkaTopic,
-			Key:   sarama.StringEncoder(fmt.Sprintf("%s-%s", version.App, version.Number)),
-			Value: &schema.AvroEncoder{SchemaId: schemaId, Content: buf.Bytes()},
-		})
-		if err != nil {
-			return errors.Wrap(err, "send message to kafka failed")
-		}
-		glog.V(1).Infof("send message successful to %s with partition %d offset %d", s.KafkaTopic, partition, offset)
 	}
-	return nil
 }
