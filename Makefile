@@ -1,5 +1,5 @@
 
-all: test
+all: generate test format addlicense
 
 test:
 	go test -cover -race $(shell go list ./... | grep -v /vendor/)
@@ -12,6 +12,7 @@ format:
 generate:
 	go get github.com/maxbrunsfeld/counterfeiter
 	go get github.com/actgardner/gogen-avro/gogen-avro
+	rm -rf mocks avro
 	go generate ./...
 
 addlicense:

@@ -25,7 +25,7 @@ type Sender struct {
 	}
 }
 
-func (s *Sender) Send(ctx context.Context, versions <-chan avro.Version) error {
+func (s *Sender) Send(ctx context.Context, versions <-chan avro.ApplicationVersionAvailable) error {
 	config := sarama.NewConfig()
 	config.Version = sarama.V2_0_0_0
 	config.Producer.RequiredAcks = sarama.WaitForAll
@@ -64,7 +64,7 @@ func (s *Sender) Send(ctx context.Context, versions <-chan avro.Version) error {
 			}
 			partition, offset, err := producer.SendMessage(&sarama.ProducerMessage{
 				Topic: s.KafkaTopic,
-				Key:   sarama.StringEncoder(fmt.Sprintf("%s-%s", version.App, version.Number)),
+				Key:   sarama.StringEncoder(fmt.Sprintf("%s-%s", version.App, version.Version)),
 				Value: &schema.AvroEncoder{SchemaId: schemaId, Content: buf.Bytes()},
 			})
 			if err != nil {

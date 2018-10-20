@@ -9,9 +9,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/golang/glog"
-
 	"github.com/bborbe/kafka-k8s-version-collector/avro"
+	"github.com/golang/glog"
 	"github.com/pkg/errors"
 )
 
@@ -24,7 +23,7 @@ type Fetcher struct {
 	HttpClient httpClient
 }
 
-func (v *Fetcher) Fetch(ctx context.Context, versions chan<- avro.Version) error {
+func (v *Fetcher) Fetch(ctx context.Context, versions chan<- avro.ApplicationVersionAvailable) error {
 	url := "https://gcr.io/v2/google_containers/hyperkube-amd64/tags/list"
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
@@ -50,9 +49,9 @@ func (v *Fetcher) Fetch(ctx context.Context, versions chan<- avro.Version) error
 		case <-ctx.Done():
 			glog.Infof("context done => return")
 			return nil
-		case versions <- avro.Version{
-			Number: tag,
-			App:    "Kubernetes",
+		case versions <- avro.ApplicationVersionAvailable{
+			App:     "Kubernetes",
+			Version: tag,
 		}:
 		}
 	}

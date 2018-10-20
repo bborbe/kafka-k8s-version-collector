@@ -28,8 +28,8 @@ var _ = Describe("Version Fetcher", func() {
 		fetcher := &version.Fetcher{
 			HttpClient: httpClient,
 		}
-		versions := make(chan avro.Version)
-		var list []avro.Version
+		versions := make(chan avro.ApplicationVersionAvailable)
+		var list []avro.ApplicationVersionAvailable
 		var wg sync.WaitGroup
 		wg.Add(1)
 		go func() {
@@ -53,8 +53,8 @@ var _ = Describe("Version Fetcher", func() {
 		fetcher := &version.Fetcher{
 			HttpClient: httpClient,
 		}
-		versions := make(chan avro.Version)
-		var list []avro.Version
+		versions := make(chan avro.ApplicationVersionAvailable)
+		var list []avro.ApplicationVersionAvailable
 		var wg sync.WaitGroup
 		wg.Add(1)
 		go func() {
@@ -69,10 +69,10 @@ var _ = Describe("Version Fetcher", func() {
 		wg.Wait()
 		Expect(list).To(HaveLen(3))
 		Expect(list[0].App).To(Equal("Kubernetes"))
-		Expect(list[0].Number).To(Equal("v1"))
+		Expect(list[0].Version).To(Equal("v1"))
 		Expect(list[1].App).To(Equal("Kubernetes"))
-		Expect(list[1].Number).To(Equal("v2"))
+		Expect(list[1].Version).To(Equal("v2"))
 		Expect(list[2].App).To(Equal("Kubernetes"))
-		Expect(list[2].Number).To(Equal("v3"))
+		Expect(list[2].Version).To(Equal("v3"))
 	})
 })

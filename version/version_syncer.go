@@ -14,11 +14,11 @@ import (
 )
 
 type fetcher interface {
-	Fetch(ctx context.Context, versions chan<- avro.Version) error
+	Fetch(ctx context.Context, versions chan<- avro.ApplicationVersionAvailable) error
 }
 
 type sender interface {
-	Send(ctx context.Context, versions <-chan avro.Version) error
+	Send(ctx context.Context, versions <-chan avro.ApplicationVersionAvailable) error
 }
 
 type Syncer struct {
@@ -29,7 +29,7 @@ type Syncer struct {
 func (s *Syncer) Sync(ctx context.Context) error {
 	glog.V(1).Infof("sync started")
 	defer glog.V(1).Infof("sync finished")
-	versions := make(chan avro.Version, runtime.NumCPU())
+	versions := make(chan avro.ApplicationVersionAvailable, runtime.NumCPU())
 	return run.CancelOnFirstError(
 		ctx,
 		func(ctx context.Context) error {

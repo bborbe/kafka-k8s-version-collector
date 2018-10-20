@@ -5,4 +5,4 @@
 package main
 
 //go:generate mkdir -p ./avro
-//go:generate $GOPATH/bin/gogen-avro ./avro version.avsc
+//go:generate $GOPATH/bin/gogen-avro ./avro application_version_available.avsc
