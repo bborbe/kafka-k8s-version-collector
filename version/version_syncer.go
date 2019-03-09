@@ -13,20 +13,27 @@ import (
 	"github.com/golang/glog"
 )
 
-type fetcher interface {
-	Fetch(ctx context.Context, versions chan<- avro.ApplicationVersionAvailable) error
+//go:generate counterfeiter -o ../mocks/syncer.go --fake-name Syncer . Syncer
+type Syncer interface {
+	Sync(ctx context.Context) error
 }
 
-type sender interface {
-	Send(ctx context.Context, versions <-chan avro.ApplicationVersionAvailable) error
+func NewSyncer(
+	fetcher Fetcher,
+	sender Sender,
+) Syncer {
+	return &syncer{
+		fetcher: fetcher,
+		sender:  sender,
+	}
 }
 
-type Syncer struct {
-	Fetcher fetcher
-	Sender  sender
+type syncer struct {
+	fetcher Fetcher
+	sender  Sender
 }
 
-func (s *Syncer) Sync(ctx context.Context) error {
+func (s *syncer) Sync(ctx context.Context) error {
 	glog.V(1).Infof("sync started")
 	defer glog.V(1).Infof("sync finished")
 	versions := make(chan avro.ApplicationVersionAvailable, runtime.NumCPU())
@@ -34,10 +41,10 @@ func (s *Syncer) Sync(ctx context.Context) error {
 		ctx,
 		func(ctx context.Context) error {
 			defer close(versions)
-			return s.Fetcher.Fetch(ctx, versions)
+			return s.fetcher.Fetch(ctx, versions)
 		},
 		func(ctx context.Context) error {
-			return s.Sender.Send(ctx, versions)
+			return s.sender.Send(ctx, versions)
 		},
 	)
 }

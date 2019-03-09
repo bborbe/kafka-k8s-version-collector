@@ -8,6 +8,6 @@ Publishes available Kubernetes versions to a Kafka topic.
 go run main.go \
 -kafka-brokers=kafka:9092 \
 -kafka-topic=application-version-available \
--kafka-schema-registry-url=http://localhost:8081 \
+-kafka-schema-registry-url=http://schema-registry:8081 \
 -v=2
 ```

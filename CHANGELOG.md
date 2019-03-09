@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2.1.0
+
+- Refactoring
+
 ## 2.0.0
 
 - Rename Number to Version in schema

@@ -8,7 +8,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/Shopify/sarama"
 	"github.com/bborbe/kafka-k8s-version-collector/avro"
@@ -17,33 +16,30 @@ import (
 	"github.com/seibert-media/go-kafka/schema"
 )
 
-type Sender struct {
-	KafkaBrokers   string
-	KafkaTopic     string
-	SchemaRegistry interface {
-		SchemaId(subject string, schema string) (uint32, error)
+//go:generate counterfeiter -o ../mocks/sender.go --fake-name Sender . Sender
+type Sender interface {
+	Send(ctx context.Context, versions <-chan avro.ApplicationVersionAvailable) error
+}
+
+func NewSender(
+	producer sarama.SyncProducer,
+	schemaRegistry schema.Registry,
+	kafkaTopic string,
+) Sender {
+	return &sender{
+		producer:       producer,
+		schemaRegistry: schemaRegistry,
+		kafkaTopic:     kafkaTopic,
 	}
 }
 
-func (s *Sender) Send(ctx context.Context, versions <-chan avro.ApplicationVersionAvailable) error {
-	config := sarama.NewConfig()
-	config.Version = sarama.V2_0_0_0
-	config.Producer.RequiredAcks = sarama.WaitForAll
-	config.Producer.Retry.Max = 10
-	config.Producer.Return.Successes = true
+type sender struct {
+	producer       sarama.SyncProducer
+	schemaRegistry schema.Registry
+	kafkaTopic     string
+}
 
-	client, err := sarama.NewClient(strings.Split(s.KafkaBrokers, ","), config)
-	if err != nil {
-		return errors.Wrap(err, "create client failed")
-	}
-	defer client.Close()
-
-	producer, err := sarama.NewSyncProducerFromClient(client)
-	if err != nil {
-		return errors.Wrap(err, "create sync producer failed")
-	}
-	defer producer.Close()
-
+func (s *sender) Send(ctx context.Context, versions <-chan avro.ApplicationVersionAvailable) error {
 	for {
 		select {
 		case <-ctx.Done():
@@ -54,7 +50,7 @@ func (s *Sender) Send(ctx context.Context, versions <-chan avro.ApplicationVersi
 				glog.V(3).Infof("channel closed => return")
 				return nil
 			}
-			schemaId, err := s.SchemaRegistry.SchemaId(fmt.Sprintf("%s-value", s.KafkaTopic), version.Schema())
+			schemaId, err := s.schemaRegistry.SchemaId(fmt.Sprintf("%s-value", s.kafkaTopic), version.Schema())
 			if err != nil {
 				return errors.Wrap(err, "get schema id failed")
 			}
@@ -62,15 +58,15 @@ func (s *Sender) Send(ctx context.Context, versions <-chan avro.ApplicationVersi
 			if err := version.Serialize(buf); err != nil {
 				return errors.Wrap(err, "serialize version failed")
 			}
-			partition, offset, err := producer.SendMessage(&sarama.ProducerMessage{
-				Topic: s.KafkaTopic,
+			partition, offset, err := s.producer.SendMessage(&sarama.ProducerMessage{
+				Topic: s.kafkaTopic,
 				Key:   sarama.StringEncoder(fmt.Sprintf("%s-%s", version.App, version.Version)),
 				Value: &schema.AvroEncoder{SchemaId: schemaId, Content: buf.Bytes()},
 			})
 			if err != nil {
 				return errors.Wrap(err, "send message to kafka failed")
 			}
-			glog.V(3).Infof("send message successful to %s with partition %d offset %d", s.KafkaTopic, partition, offset)
+			glog.V(3).Infof("send message successful to %s with partition %d offset %d", s.kafkaTopic, partition, offset)
 		}
 	}
 }

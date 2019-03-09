@@ -14,32 +14,44 @@ import (
 	"github.com/pkg/errors"
 )
 
-//go:generate counterfeiter -o ../mocks/http_client.go --fake-name HttpClient . httpClient
-type httpClient interface {
-	Do(req *http.Request) (*http.Response, error)
+//go:generate counterfeiter -o ../mocks/fetcher.go --fake-name Fetcher . Fetcher
+type Fetcher interface {
+	Fetch(ctx context.Context, versions chan<- avro.ApplicationVersionAvailable) error
 }
 
-type Fetcher struct {
-	HttpClient httpClient
+func NewFetcher(
+	httpClient *http.Client,
+	url string,
+) Fetcher {
+	return &fetcher{
+		httpClient: httpClient,
+		url:        url,
+	}
 }
 
-func (v *Fetcher) Fetch(ctx context.Context, versions chan<- avro.ApplicationVersionAvailable) error {
-	url := "https://gcr.io/v2/google_containers/hyperkube-amd64/tags/list"
+type fetcher struct {
+	httpClient *http.Client
+	url        string
+}
+
+func (f *fetcher) Fetch(ctx context.Context, versions chan<- avro.ApplicationVersionAvailable) error {
+	url := f.url + "/v2/google_containers/hyperkube-amd64/tags/list"
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return errors.Wrap(err, "build request failed")
 	}
-	resp, err := v.HttpClient.Do(req)
+	glog.V(1).Infof("%s %s", req.Method, req.URL.String())
+	resp, err := f.httpClient.Do(req)
 	if err != nil {
 		return errors.Wrap(err, "request failed")
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode/100 != 2 {
 		return errors.New("request status code != 2xx")
 	}
 	var data struct {
 		Tags []string `json:"tags"`
 	}
-	defer resp.Body.Close()
 	err = json.NewDecoder(resp.Body).Decode(&data)
 	if err != nil {
 		return errors.Wrap(err, "decode json failed")
